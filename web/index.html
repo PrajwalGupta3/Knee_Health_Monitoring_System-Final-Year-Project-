@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Knee Monitor — Login</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="static/styles.css" />
+</head>
+<body>
+  <main class="card center">
+    <h1>Knee Monitor</h1>
+    <p class="muted">College demo — sign in with any username</p>
+
+    <label for="user">User ID</label>
+    <input id="user" placeholder="e.g. pra jwal" />
+
+    <div class="row">
+      <button id="btnLogin">Sign in</button>
+      <button id="btnGuest" class="plain">Use guest</button>
+    </div>
+
+    <p id="msg" class="muted"></p>
+    <footer class="muted small">This app is for research & demo only — not a diagnostic device.</footer>
+  </main>
+
+  <script src="static/app.js"></script>
+  <script>
+    document.getElementById("btnLogin").onclick = async () => {
+      const u = document.getElementById("user").value.trim();
+      if (!u) { document.getElementById("msg").innerText = "Enter user id"; return; }
+      const res = await fetch("/login", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({user_id: u}) });
+      const j = await res.json();
+      if (j.ok) {
+        localStorage.setItem("user_id", u);
+        location.href = "dashboard.html";
+      } else {
+        document.getElementById("msg").innerText = j.error || "Login failed";
+      }
+    };
+
+    document.getElementById("btnGuest").onclick = () => {
+      localStorage.setItem("user_id", "guest");
+      location.href = "dashboard.html";
+    };
+  </script>
+</body>
+</html>

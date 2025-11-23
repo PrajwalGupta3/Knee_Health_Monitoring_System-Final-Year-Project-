@@ -1,0 +1,8 @@
+# Ignore the secrets file
+.env
+
+# Ignore the plots folder and all 4 subfolders inside it
+data/plots/
+
+# Ignore the Firebase admin SDK JSON file
+octa-knee-firebase-adminsdk-fbsvc-38a074b0d9.json

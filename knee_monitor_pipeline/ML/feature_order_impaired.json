@@ -1,0 +1,8 @@
+[
+  "pace_spm",
+  "acc_mag_rms",
+  "gyro_mag_mean",
+  "dom_freq_power",
+  "dom_freq_power_log",
+  "gyro_acc_ratio"
+]

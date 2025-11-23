@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Dashboard — Knee Monitor</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="static/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">Knee Monitor</div>
+    <div id="userInfo"></div>
+  </header>
+
+  <main class="container">
+    <section class="card">
+    <h2>Profile</h2>
+    <div>
+        <label>Age <input id="profile_age" type="number" /></label>
+        <label>Height cm <input id="profile_height" type="number" /></label>
+        <label>Weight kg <input id="profile_weight" type="number" /></label>
+        <label>Gender <input id="profile_gender" /></label>
+        <label>Knee side <input id="profile_knee" placeholder="left/right" /></label>
+        <div class="row">
+        <button id="btnSaveProfile">Save Profile</button>
+        <span id="profileStatus" class="muted"></span>
+        </div>
+    </div>
+    </section>
+
+    <section class="card">
+    <h2>Realtime Capture</h2>
+    <p class="muted">Click "Wait for next reading" after you start the walking session on the phone device.</p>
+    <div class="row">
+        <button id="btnPoll">Wait for next reading</button>
+        <button id="btnProcess" disabled>Process fetched session</button>
+        <a id="linkChat" class="btn-link" href="chat.html">Chat about last</a>
+    </div>
+    <p id="pollStatus" class="muted"></p>
+    </section>
+
+
+    <section id="result" class="card hidden">
+      <h3>Last Result</h3>
+      <div id="resultSummary"></div>
+      <h4>Raw features</h4>
+      <pre id="rawFeatures"></pre>
+      
+      <h4>Comparison plot</h4>
+      <div id="plotContainer">
+        <img id="comparePlot" style="max-width:100%; display:none; margin-top:10px; border:1px solid #ccc; border-radius:4px;" />
+      </div>
+      
+      <div id="downloadArea" style="margin-top:10px;"></div>
+    </section>
+
+    <section id="history" class="card">
+      <h3>Last 5 sessions (history)</h3>
+      <ul id="historyList"></ul>
+    </section>
+  </main>
+
+  <script src="static/app.js"></script>
+  <script>
+    const userId = localStorage.getItem("user_id");
+    if (!userId) location.href = "index.html";
+    document.getElementById("userInfo").innerText = `User: ${userId}`;
+
+    let fetchedTimestamp = null;
+    let fetchedSessionJson = null;
+    let lastProcessedResult = null;
+
+    async function refreshHistory() {
+        const res = await fetch("/get_history", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({user_id: userId})});
+        const j = await res.json();
+        if (!j.ok) return;
+        const list = document.getElementById("historyList");
+        list.innerHTML = "";
+        (j.history || []).slice().reverse().forEach(h => {
+            const li = document.createElement("li");
+            li.innerText = `${h.session_id} — pred: ${h.result.prediction || "?"} (${h.result.probabilities ? JSON.stringify(h.result.probabilities) : "n/a"})`;
+            list.appendChild(li);
+        });
+        // fill profile inputs
+        const p = j.profile || {};
+        if (p.height_cm) document.getElementById("profile_height").value = p.height_cm;
+        if (p.weight_kg) document.getElementById("profile_weight").value = p.weight_kg;
+        if (p.age) document.getElementById("profile_age").value = p.age;
+        if (p.gender) document.getElementById("profile_gender").value = p.gender;
+        if (p.knee_side) document.getElementById("profile_knee").value = p.knee_side;
+    }
+
+
+    document.getElementById("btnPoll").onclick = async () => {
+      document.getElementById("pollStatus").innerText = "Polling for new reading... (timeout 5m)";
+      // first get latest known timestamp from localStorage
+      const lastSeen = localStorage.getItem("last_seen_ts") || null;
+      try {
+        const wait = await fetch("/wait_for_new_reading", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({last_seen_timestamp: lastSeen})});
+        const wj = await wait.json();
+        if (!wj.ok) {
+          document.getElementById("pollStatus").innerText = "No new reading: " + (wj.error || "timeout");
+          return;
+        }
+        fetchedTimestamp = wj.new_timestamp;
+        localStorage.setItem("last_seen_ts", fetchedTimestamp);
+        document.getElementById("pollStatus").innerText = "New timestamp: " + fetchedTimestamp + " — fetching raw JSON...";
+        const getj = await fetch("/get_session_json", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({timestamp: fetchedTimestamp})});
+        const gj = await getj.json();
+        if (!gj.ok) { document.getElementById("pollStatus").innerText = "Failed to fetch session JSON"; return; }
+        fetchedSessionJson = gj.data;
+        document.getElementById("pollStatus").innerText = "Session fetched. Click 'Process fetched session' to run pipeline.";
+        document.getElementById("btnProcess").disabled = false;
+      } catch (e) {
+        document.getElementById("pollStatus").innerText = "Error: " + e;
+      }
+    };
+
+    document.getElementById("btnProcess").onclick = async () => {
+        if (!fetchedSessionJson) return;
+        document.getElementById("pollStatus").innerText = "Processing (this may take a few seconds)...";
+        const res = await fetch("/process_session", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({user_id: userId, session_data: fetchedSessionJson})});
+        const j = await res.json();
+        
+        if (!j.ok) {
+            document.getElementById("pollStatus").innerText = "Processing failed: " + (j.error || "unknown");
+            return;
+        }
+        
+        document.getElementById("pollStatus").innerText = "Processing finished: " + j.session_id;
+        lastProcessedResult = j.result;
+        document.getElementById("result").classList.remove("hidden");
+        document.getElementById("resultSummary").innerHTML = `<strong>Prediction:</strong> ${j.result.prediction} <br/> <strong>Probabilities:</strong> ${JSON.stringify(j.result.probabilities)} <br/> <strong>BMI:</strong> ${j.result.bmi.bmi || 'N/A'} (${j.result.bmi.bmi_category || 'N/A'})`;
+        document.getElementById("rawFeatures").innerText = JSON.stringify(j.result.raw_features, null, 2);
+
+        // --- NEW: Display the Plot ---
+        const plotImg = document.getElementById("comparePlot");
+        if (j.plot_url) {
+            plotImg.src = j.plot_url;
+            plotImg.style.display = "block";
+        } else {
+            plotImg.style.display = "none";
+        }
+        // -----------------------------
+
+        // show download link
+        const downloadDivId = "downloadArea";
+        let dd = document.getElementById(downloadDivId);
+        // Ensure dd exists (it's now in the HTML, but good to be safe)
+        if (!dd) {
+            dd = document.createElement("div");
+            dd.id = downloadDivId;
+            document.getElementById("result").appendChild(dd);
+        }
+        dd.innerHTML = `<a href="${j.download_csv}" download>Download final.csv</a>`;
+
+        // refresh history
+        await refreshHistory();
+        document.getElementById("btnProcess").disabled = true;
+    };
+
+    document.getElementById("btnSaveProfile").onclick = async () => {
+    const profile = {
+        age: parseInt(document.getElementById("profile_age").value) || null,
+        height_cm: parseFloat(document.getElementById("profile_height").value) || null,
+        weight_kg: parseFloat(document.getElementById("profile_weight").value) || null,
+        gender: document.getElementById("profile_gender").value || null,
+        knee_side: document.getElementById("profile_knee").value || null
+    };
+    const resp = await fetch("/update_profile", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({user_id: userId, profile})});
+    const j = await resp.json();
+    if (j.ok) {
+        document.getElementById("profileStatus").innerText = "Saved";
+        setTimeout(()=>document.getElementById("profileStatus").innerText="",1500);
+    } else {
+        document.getElementById("profileStatus").innerText = "Save failed";
+    }
+    };
+
+    // link to chat: store last result in localStorage for chat page
+    document.getElementById("linkChat").addEventListener("click", () => {
+      if (lastProcessedResult) {
+        localStorage.setItem("last_result", JSON.stringify(lastProcessedResult));
+      }
+    });
+
+    // initial load
+    refreshHistory();
+  </script>
+</body>
+</html>

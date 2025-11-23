@@ -1,0 +1,197 @@
+{
+  "user_id": "prajwal",
+  "profile": {
+    "age": 21,
+    "height_cm": 172,
+    "weight_kg": 78,
+    "gender": "Male",
+    "knee_side": "right"
+  },
+  "history": [
+    {
+      "session_id": "20251120_230148",
+      "result": {
+        "ok": true,
+        "prediction": "Recovery",
+        "probabilities": {
+          "Healthy": 2.7879008132532137e-07,
+          "Impaired": 3.6151084148403856e-07,
+          "Recovery": 0.9999993596990772
+        },
+        "raw_features": {
+          "session_id": "session_1_2025-11-20_23-02-02",
+          "qc_pass": false,
+          "qc_fail_reason": "low_variance",
+          "pace_spm": 46.0,
+          "acc_mag_rms": 2011.503463415694,
+          "gyro_mag_mean": 209.5049846330267,
+          "dom_freq_hz": 0.3833333333333333,
+          "dom_freq_power": 810.399516884297,
+          "dom_freq_power_log": 6.698760555362134,
+          "gyro_acc_ratio": 0.1041534297321896,
+          "acc_mag_mean": 2011.4774536234677,
+          "gyro_mag_std": 5.989658934454812
+        },
+        "threshold_flags": {
+          "Healthy": "OK",
+          "Impaired": "OK",
+          "Recovery": "OK"
+        },
+        "bmi": {
+          "bmi": 26.37,
+          "bmi_category": "Overweight"
+        }
+      },
+      "final_csv": "sessions/20251120_230148/final.csv",
+      "plot_url": "/user_file/prajwal/sessions/20251120_230148/plots/session_1_2025-11-20_23-02-02.png"
+    },
+    {
+      "session_id": "20251120_230248",
+      "result": {
+        "ok": true,
+        "prediction": "Recovery",
+        "probabilities": {
+          "Healthy": 1.2486286102500084e-07,
+          "Impaired": 6.975642006933083e-08,
+          "Recovery": 0.999999805380719
+        },
+        "raw_features": {
+          "session_id": "session_1_2025-11-20_23-02-53",
+          "qc_pass": false,
+          "qc_fail_reason": "low_variance",
+          "pace_spm": 47.14285714285714,
+          "acc_mag_rms": 2010.277286310807,
+          "gyro_mag_mean": 210.60343710414864,
+          "dom_freq_hz": 0.3928571428571428,
+          "dom_freq_power": 234.6054356055614,
+          "dom_freq_power_log": 5.462158522842199,
+          "gyro_acc_ratio": 0.1047633769421611,
+          "acc_mag_mean": 2010.2606237106515,
+          "gyro_mag_std": 2.9256473268444063
+        },
+        "threshold_flags": {
+          "Healthy": "OK",
+          "Impaired": "OK",
+          "Recovery": "OK"
+        },
+        "bmi": {
+          "bmi": 26.37,
+          "bmi_category": "Overweight"
+        }
+      },
+      "final_csv": "sessions/20251120_230248/final.csv",
+      "plot_url": "/user_file/prajwal/sessions/20251120_230248/plots/session_1_2025-11-20_23-02-53.png"
+    },
+    {
+      "session_id": "20251120_230351",
+      "result": {
+        "ok": true,
+        "prediction": "Recovery",
+        "probabilities": {
+          "Healthy": 7.169740906422196e-06,
+          "Impaired": 0.00012011156695507607,
+          "Recovery": 0.9998727186921385
+        },
+        "raw_features": {
+          "session_id": "session_1_2025-11-20_23-03-56",
+          "qc_pass": true,
+          "qc_fail_reason": null,
+          "pace_spm": 58.94736842105263,
+          "acc_mag_rms": 2017.8620569062084,
+          "gyro_mag_mean": 228.7448808027212,
+          "dom_freq_hz": 0.4912280701754385,
+          "dom_freq_power": 27232.183831199985,
+          "dom_freq_power_log": 10.212191502490498,
+          "gyro_acc_ratio": 0.1133600188475321,
+          "acc_mag_mean": 2017.2371389015148,
+          "gyro_mag_std": 126.64851755049196
+        },
+        "threshold_flags": {
+          "Healthy": "OK",
+          "Impaired": "OK",
+          "Recovery": "OK"
+        },
+        "bmi": {
+          "bmi": 26.37,
+          "bmi_category": "Overweight"
+        }
+      },
+      "final_csv": "sessions/20251120_230351/final.csv",
+      "plot_url": "/user_file/prajwal/sessions/20251120_230351/plots/session_1_2025-11-20_23-03-56.png"
+    },
+    {
+      "session_id": "20251120_230446",
+      "result": {
+        "ok": true,
+        "prediction": "Impaired",
+        "probabilities": {
+          "Healthy": 0.375163271689926,
+          "Impaired": 0.6069196525437373,
+          "Recovery": 0.017917075766336808
+        },
+        "raw_features": {
+          "session_id": "session_1_2025-11-20_23-04-51",
+          "qc_pass": true,
+          "qc_fail_reason": null,
+          "pace_spm": 37.89473684210526,
+          "acc_mag_rms": 2115.815586598045,
+          "gyro_mag_mean": 1768.2340100638871,
+          "dom_freq_hz": 0.3157894736842105,
+          "dom_freq_power": 394489.0013047325,
+          "dom_freq_power_log": 12.885349073711716,
+          "gyro_acc_ratio": 0.8357221778983777,
+          "acc_mag_mean": 2096.0904081132708,
+          "gyro_mag_std": 950.9613526982926
+        },
+        "threshold_flags": {
+          "Healthy": "OK",
+          "Impaired": "OK",
+          "Recovery": "OK"
+        },
+        "bmi": {
+          "bmi": 26.37,
+          "bmi_category": "Overweight"
+        }
+      },
+      "final_csv": "sessions/20251120_230446/final.csv",
+      "plot_url": "/user_file/prajwal/sessions/20251120_230446/plots/session_1_2025-11-20_23-04-51.png"
+    },
+    {
+      "session_id": "20251120_230552",
+      "result": {
+        "ok": true,
+        "prediction": "Recovery",
+        "probabilities": {
+          "Healthy": 0.0678230985143302,
+          "Impaired": 0.2407419509420545,
+          "Recovery": 0.6914349505436154
+        },
+        "raw_features": {
+          "session_id": "session_1_2025-11-20_23-05-56",
+          "qc_pass": true,
+          "qc_fail_reason": null,
+          "pace_spm": 48.42105263157895,
+          "acc_mag_rms": 2048.429788030634,
+          "gyro_mag_mean": 1222.9396677847012,
+          "dom_freq_hz": 0.4035087719298245,
+          "dom_freq_power": 113937.84744693057,
+          "dom_freq_power_log": 11.643417157544668,
+          "gyro_acc_ratio": 0.5970132219956837,
+          "acc_mag_mean": 2042.1789967700115,
+          "gyro_mag_std": 908.0252851128844
+        },
+        "threshold_flags": {
+          "Healthy": "OK",
+          "Impaired": "OK",
+          "Recovery": "OK"
+        },
+        "bmi": {
+          "bmi": 26.37,
+          "bmi_category": "Overweight"
+        }
+      },
+      "final_csv": "sessions/20251120_230552/final.csv",
+      "plot_url": "/user_file/prajwal/sessions/20251120_230552/plots/session_1_2025-11-20_23-05-56.png"
+    }
+  ]
+}

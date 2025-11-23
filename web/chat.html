@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Chat — Knee Monitor</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="static/styles.css" />
+</head>
+<body>
+  <header class="topbar"><div class="brand">Knee Monitor</div></header>
+  <main class="container">
+    <section class="card">
+      <h2>Assistant</h2>
+      
+      <div id="contextBox" class="muted small" style="margin-bottom: 15px;"></div>
+      
+      <div id="answer" class="card" style="background: #e3f2fd; border: 1px solid #bbdefb; color: #0d47a1;">
+        </div>
+
+      <textarea id="question" placeholder="Ask about this reading (e.g. 'Why was I flagged?')" rows="3"></textarea>
+      
+      <div class="row">
+        <button id="btnAsk">Ask Assistant</button>
+        <button id="btnBack" class="plain" onclick="location.href='dashboard.html'">Back</button>
+      </div>
+      
+    </section>
+  </main>
+
+  <script src="static/app.js"></script>
+  <script>
+    // 1. Load Data
+    const userId = localStorage.getItem("user_id") || "User";
+    const last = JSON.parse(localStorage.getItem("last_result") || "null");
+
+    // 2. Set Context (Small text at top)
+    const pred = last ? last.prediction : "N/A";
+    document.getElementById("contextBox").innerText = last 
+        ? `Context: Last session was classified as '${pred}'.` 
+        : "Context: No recent session data found.";
+
+    // 3. AUTO-GREETING (The new part)
+    const answerBox = document.getElementById("answer");
+    
+    if (last) {
+        answerBox.innerHTML = `
+            <strong>Hello ${userId}!</strong> 👋<br/>
+            I am your Knee Monitor Assistant.<br/><br/>
+            I see your latest gait reading is classified as <strong>"${pred}"</strong>.<br/>
+            I can explain the raw features or suggest next steps. What is your query?
+        `;
+    } else {
+        answerBox.innerHTML = `
+            <strong>Hello ${userId}!</strong> 👋<br/>
+            I am your Knee Monitor Assistant.<br/>
+            I don't see any recent session data yet, but I am ready to help once you process a reading.
+        `;
+    }
+
+    // 4. Handle "Ask" Button
+    document.getElementById("btnAsk").onclick = async () => {
+      const q = document.getElementById("question").value.trim();
+      if (!q) return;
+
+      // Change UI to "Thinking..." state
+      answerBox.style.background = "#fff"; // Revert to white for answer
+      answerBox.style.color = "#111";
+      answerBox.innerHTML = "<em>Thinking...</em>";
+      
+      const payload = {
+        user_id: localStorage.getItem("user_id"),
+        question: q
+      };
+
+      try {
+          const res = await fetch("/chatbot", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(payload)});
+          const j = await res.json();
+          
+          if (!j.ok) {
+            answerBox.innerText = "Assistant error: " + (j.error || "unknown");
+          } else {
+            // Convert newlines to <br> for better formatting
+            answerBox.innerHTML = j.response.replace(/\n/g, "<br/>");
+          }
+      } catch (e) {
+          answerBox.innerText = "Network Error: " + e;
+      }
+    };
+  </script>
+</body>
+</html>

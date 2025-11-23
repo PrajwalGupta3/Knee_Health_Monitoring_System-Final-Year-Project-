@@ -1,0 +1,9 @@
+# 1. Ignore everything in this root folder
+/*
+
+# 2. But allow these two specific folders
+!/knee_monitor_pipeline/
+!/web/
+
+# 3. Allow the gitignore file itself
+!/.gitignore
