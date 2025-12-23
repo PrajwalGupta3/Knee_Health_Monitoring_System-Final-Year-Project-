@@ -67,7 +67,7 @@ We moved beyond basic API calls to ensure medical safety:
 git clone https://github.com/PrajwalGupta3/Knee_Health_Monitoring_System-Final-Year-Project-.git
 cd OctaKnee
 
-### 2. Backend Setup
+2. Backend Setup
 It is recommended to use a virtual environment to manage dependencies.
 
 Step A: Create Virtual Environment
