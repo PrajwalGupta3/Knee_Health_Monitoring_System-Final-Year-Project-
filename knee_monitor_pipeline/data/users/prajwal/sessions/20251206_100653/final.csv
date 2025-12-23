@@ -1,0 +1,2 @@
+session_id,qc_pass,qc_fail_reason,pace_spm,acc_mag_rms,gyro_mag_mean,dom_freq_hz,dom_freq_power,dom_freq_power_log,gyro_acc_ratio,acc_mag_mean,gyro_mag_std
+session_1_2025-12-06_10-06-59,True,,40.0,2101.8804120754985,1488.2487688232281,0.3333333333333333,2103002.7154717445,14.55887722143161,0.7080558723856945,2062.436712700177,1198.4679635930167

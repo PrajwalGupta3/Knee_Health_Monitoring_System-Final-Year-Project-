@@ -1,0 +1,9 @@
+              precision    recall  f1-score   support
+
+     Healthy       0.74      0.76      0.75        33
+    Impaired       0.79      0.77      0.78        39
+    Recovery       1.00      1.00      1.00        24
+
+    accuracy                           0.82        96
+   macro avg       0.84      0.84      0.84        96
+weighted avg       0.82      0.82      0.82        96

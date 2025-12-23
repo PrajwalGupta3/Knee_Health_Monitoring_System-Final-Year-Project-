@@ -1,0 +1,16 @@
+\begin{table}[ht]
+\centering
+\begin{tabular}{lcccc}
+\hline
+Model & Accuracy & Latency ($\mu$s) & F1-Score & Efficiency \\
+\hline
+\textbf{LogisticRegression} & 0.806 & 2.4 & 0.835 & 65.41 \\
+GaussianNB & 0.835 & 2.8 & 0.842 & 61.99 \\
+SVM_linear & 0.830 & 3.7 & 0.842 & 53.84 \\
+SVM_rbf & 0.828 & 6.2 & 0.842 & 42.00 \\
+kNN & 0.838 & 33.4 & 0.861 & 23.68 \\
+RandomForest & 0.812 & 77.0 & 0.842 & 18.65 \\
+\hline
+\end{tabular}
+\caption{Performance comparison. LogisticRegression selected for highest efficiency score.}\label{tab:model_comp}
+\end{table}

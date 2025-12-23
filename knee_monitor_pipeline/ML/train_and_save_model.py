@@ -15,14 +15,14 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 
-# CONFIG: adjust only if your file paths differ
+#Input CSV files
 FILES = {
     'Healthy': Path("knee_monitor_pipeline/data/processed/final_csv/healthy_baseline_qc.csv"),
     'Recovery': Path("knee_monitor_pipeline/data/processed/final_csv/target_recovery_qc.csv"),
     'Fatigued': Path("knee_monitor_pipeline/data/processed/final_csv/target_fatigued_qc.csv"),
     'Unstable': Path("knee_monitor_pipeline/data/processed/final_csv/target_unstable_qc.csv"),
 }
-# Base + engineered features
+#Base and engineered features
 FEATURES = ['pace_spm', 'acc_mag_rms', 'gyro_mag_mean', 'dom_freq_power', 'dom_freq_power_log', 'gyro_acc_ratio']
 
 OUT_MODEL = Path("knee_monitor_pipeline/ML/logistic_model_impaired.joblib")
@@ -41,7 +41,7 @@ def load_and_engineer(files_map):
         if df.empty:
             print(f"[WARN] empty after QC: {p}")
             continue
-        # engineered features
+        #engineered features
         if 'dom_freq_power' in df.columns:
             df['dom_freq_power_log'] = np.log1p(df['dom_freq_power'].astype(float))
         else:

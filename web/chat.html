@@ -2,90 +2,374 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Chat — Knee Monitor</title>
+  <title>OctaKnee — Chat</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <link rel="stylesheet" href="static/styles.css" />
-</head>
-<body>
-  <header class="topbar"><div class="brand">Knee Monitor</div></header>
-  <main class="container">
-    <section class="card">
-      <h2>Assistant</h2>
-      
-      <div id="contextBox" class="muted small" style="margin-bottom: 15px;"></div>
-      
-      <div id="answer" class="card" style="background: #e3f2fd; border: 1px solid #bbdefb; color: #0d47a1;">
-        </div>
-
-      <textarea id="question" placeholder="Ask about this reading (e.g. 'Why was I flagged?')" rows="3"></textarea>
-      
-      <div class="row">
-        <button id="btnAsk">Ask Assistant</button>
-        <button id="btnBack" class="plain" onclick="location.href='dashboard.html'">Back</button>
-      </div>
-      
-    </section>
-  </main>
-
-  <script src="static/app.js"></script>
-  <script>
-    // 1. Load Data
-    const userId = localStorage.getItem("user_id") || "User";
-    const last = JSON.parse(localStorage.getItem("last_result") || "null");
-
-    // 2. Set Context (Small text at top)
-    const pred = last ? last.prediction : "N/A";
-    document.getElementById("contextBox").innerText = last 
-        ? `Context: Last session was classified as '${pred}'.` 
-        : "Context: No recent session data found.";
-
-    // 3. AUTO-GREETING (The new part)
-    const answerBox = document.getElementById("answer");
-    
-    if (last) {
-        answerBox.innerHTML = `
-            <strong>Hello ${userId}!</strong> 👋<br/>
-            I am your Knee Monitor Assistant.<br/><br/>
-            I see your latest gait reading is classified as <strong>"${pred}"</strong>.<br/>
-            I can explain the raw features or suggest next steps. What is your query?
-        `;
-    } else {
-        answerBox.innerHTML = `
-            <strong>Hello ${userId}!</strong> 👋<br/>
-            I am your Knee Monitor Assistant.<br/>
-            I don't see any recent session data yet, but I am ready to help once you process a reading.
-        `;
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ---------- Reset & base ---------- */
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html,body { height:100%; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f4c75 100%);
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+      color: #cbd5e1;
+      overflow:auto;
+    }
+    body::before {
+      content:'';
+      position:fixed;
+      inset:0;
+      z-index:0;
+      pointer-events:none;
+      background:
+        radial-gradient(circle at 20% 50%, rgba(59,130,246,0.08) 0%, transparent 40%),
+        radial-gradient(circle at 80% 80%, rgba(6,182,212,0.04) 0%, transparent 40%);
     }
 
-    // 4. Handle "Ask" Button
-    document.getElementById("btnAsk").onclick = async () => {
-      const q = document.getElementById("question").value.trim();
-      if (!q) return;
+    /* ---------- Card ---------- */
+    .wrap { width:100%; max-width:980px; position:relative; z-index:1; padding:20px; }
+    .card {
+      background: linear-gradient(135deg, rgba(30,41,59,0.82) 0%, rgba(15,76,117,0.62) 100%);
+      border-radius:20px;
+      padding:0;
+      overflow:hidden;
+      backdrop-filter: blur(14px);
+      border:1px solid rgba(148,163,184,0.06);
+      box-shadow: 0 25px 50px rgba(0,0,0,0.35), inset 0 1px 1px rgba(255,255,255,0.03);
+    }
+    .card::before{
+      content:'';
+      position:absolute;
+      top:-40%;
+      right:-40%;
+      width:600px; height:600px;
+      background: radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 70%);
+      border-radius:50%;
+      pointer-events:none;
+    }
 
-      // Change UI to "Thinking..." state
-      answerBox.style.background = "#fff"; // Revert to white for answer
-      answerBox.style.color = "#111";
-      answerBox.innerHTML = "<em>Thinking...</em>";
-      
-      const payload = {
-        user_id: localStorage.getItem("user_id"),
-        question: q
-      };
+    /* ---------- Header ---------- */
+    .header {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:28px 36px;
+      background: linear-gradient(135deg,#3b82f6 0%, #0ea5e9 50%, #06b6d4 100%);
+    }
+    .brand {
+      display:flex;
+      gap:14px;
+      align-items:center;
+      color:white;
+    }
+    .logo {
+      width:56px; height:56px; border-radius:12px;
+      display:flex; align-items:center; justify-content:center;
+      background:linear-gradient(135deg,#0ea5e9,#06b6d4);
+      box-shadow: 0 10px 30px rgba(6,182,212,0.12);
+    }
+    .brand h1 {
+      font-family:'Poppins', sans-serif;
+      font-weight:800;
+      font-size:20px;
+      color:white;
+      letter-spacing:-0.4px;
+    }
+    .header .controls { display:flex; gap:10px; align-items:center; }
+    .btn-ghost {
+      background:transparent; border:none; color:white; padding:8px 12px;
+      border-radius:10px; cursor:pointer; font-weight:600; text-transform:uppercase; letter-spacing:0.6px;
+    }
+    .btn-ghost:hover{ background: rgba(255,255,255,0.06); }
 
-      try {
-          const res = await fetch("/chatbot", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(payload)});
-          const j = await res.json();
-          
-          if (!j.ok) {
-            answerBox.innerText = "Assistant error: " + (j.error || "unknown");
-          } else {
-            // Convert newlines to <br> for better formatting
-            answerBox.innerHTML = j.response.replace(/\n/g, "<br/>");
-          }
-      } catch (e) {
-          answerBox.innerText = "Network Error: " + e;
+    /* ---------- Body ---------- */
+    .body {
+      padding:32px 36px;
+    }
+    .top-info { display:flex; justify-content:space-between; gap:12px; align-items:center; margin-bottom:18px; }
+    .context {
+      font-size:13px;
+      color:#cfe9ff;
+      background: rgba(14,165,233,0.06);
+      border:1px solid rgba(14,165,233,0.12);
+      padding:10px 14px;
+      border-radius:12px;
+      display:inline-block;
+    }
+
+    /* message box */
+    .message-area {
+      background: rgba(15,23,42,0.35);
+      border:1px solid rgba(148,163,184,0.05);
+      border-radius:16px;
+      padding:20px;
+      min-height:140px;
+      color: #dbeafe;
+      margin-bottom:18px;
+      overflow:auto;
+    }
+    .message-area .greeting { font-size:15px; line-height:1.6; color:#e6f7ff; }
+    .message-area .prediction {
+      display:inline-block;
+      background: linear-gradient(90deg,#0ea5e9,#06b6d4);
+      color:white;
+      padding:4px 10px;
+      border-radius:999px;
+      margin-left:8px;
+      font-weight:700;
+      font-size:13px;
+    }
+
+    /* thinking */
+    .thinking {
+      display:flex; align-items:center; gap:10px; color:#9be7ff; font-weight:700;
+    }
+    .dots { display:inline-flex; gap:6px; align-items:center; }
+    .dot { width:8px; height:8px; border-radius:50%; background: #34d3ff; opacity:0.95; transform:translateY(0); animation: bounce 900ms infinite; }
+    .dot:nth-child(2){ animation-delay:120ms }
+    .dot:nth-child(3){ animation-delay:240ms }
+    @keyframes bounce { 0%{ transform:translateY(0); opacity:0.85 } 50%{ transform:translateY(-6px); opacity:1 } 100%{ transform:translateY(0); opacity:0.85 } }
+
+    /* input area */
+    .form {
+      display:flex; gap:12px; align-items:flex-end;
+      margin-top:6px;
+    }
+    textarea#question {
+      flex:1;
+      min-height:72px;
+      max-height:220px;
+      resize:vertical;
+      padding:14px 16px;
+      border-radius:12px;
+      border:2px solid rgba(148,163,184,0.06);
+      background: rgba(15,23,42,0.65);
+      color:#e6f7ff;
+      font-size:14px;
+      font-family:inherit;
+      outline:none;
+      transition: box-shadow .18s ease, border-color .18s ease;
+    }
+    textarea#question::placeholder { color:#94a3b8; }
+    textarea#question:focus {
+      border-color: rgba(14,165,233,0.8);
+      box-shadow: 0 4px 30px rgba(14,165,233,0.08), inset 0 0 0 1px rgba(59,130,246,0.04);
+      background: rgba(6,30,45,0.75);
+    }
+
+    /* buttons */
+    .actions { display:flex; gap:10px; }
+    .btn-primary {
+      display:inline-flex; align-items:center; gap:10px;
+      padding:12px 18px; border-radius:12px; border:none; cursor:pointer; font-weight:800;
+      background: linear-gradient(135deg, #3b82f6 0%, #0ea5e9 50%, #06b6d4 100%);
+      color:#fff;
+      box-shadow: 0 12px 30px rgba(3,105,161,0.18), 0 0 40px rgba(6,182,212,0.08);
+      transition: transform .16s ease, box-shadow .16s ease;
+    }
+    .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 18px 44px rgba(3,105,161,0.22), 0 0 70px rgba(6,182,212,0.12); }
+    .btn-secondary {
+      background:transparent; color:#9be7ff; border:1px solid rgba(14,165,233,0.18); padding:10px 14px; border-radius:12px; font-weight:700; cursor:pointer;
+    }
+    .btn-secondary:hover { background: rgba(14,165,233,0.06); color:#d7fbff; border-color:rgba(14,165,233,0.3); }
+
+    /* footer */
+    .footer { margin-top:18px; padding-top:14px; border-top:1px solid rgba(148,163,184,0.04); font-size:12px; color:#94a3b8; text-align:center; }
+
+    /* responsive */
+    @media (max-width:720px){
+      .header { padding:18px; }
+      .body { padding:18px; }
+    }
+    @media (max-width:480px){
+      .brand h1 { font-size:16px; }
+      .logo { width:48px; height:48px; }
+      .message-area { min-height:120px; padding:16px; }
+      textarea#question { min-height:64px; }
+      .btn-primary{ padding:10px 14px; font-size:14px; }
+    }
+    @media (prefers-reduced-motion: reduce){
+      * { animation:none !important; transition:none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card" role="application" aria-label="OctaKnee chat assistant">
+      <header class="header" role="banner">
+        <div class="brand">
+          <div class="logo" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" fill="white" fill-opacity="0.06"/>
+              <path d="M8 12a4 4 0 1 1 8 0 4 4 0 0 1-8 0z" fill="white" fill-opacity="0.9"/>
+            </svg>
+          </div>
+          <h1>Knee Monitor</h1>
+        </div>
+
+        <div class="controls">
+          <button class="btn-ghost" id="btnBack" title="Back to dashboard">Back</button>
+        </div>
+      </header>
+
+      <section class="body" role="main">
+        <div class="top-info">
+          <div id="context" class="context" aria-live="polite">Loading context…</div>
+          <div style="opacity:.9; font-size:13px; color:#cbd5e1;">Assistant</div>
+        </div>
+
+        <div id="answerBox" class="message-area" tabindex="0" aria-live="polite">
+          </div>
+
+        <form id="askForm" class="form" onsubmit="return false;" aria-label="Ask assistant">
+          <textarea id="question" placeholder="Ask about this reading (e.g. 'Why was I flagged?')"
+                    rows="3" autocomplete="off"></textarea>
+
+          <div class="actions" aria-hidden="false">
+            <button id="btnAsk" class="btn-primary" type="button" aria-label="Send question">Ask</button>
+            <button id="btnClear" class="btn-secondary" type="button" aria-label="Clear input">Clear</button>
+          </div>
+        </form>
+
+        <div class="footer">This app is for research &amp; demo only — not a diagnostic device.</div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      // Elements
+      const contextEl = document.getElementById('context');
+      const answerBox = document.getElementById('answerBox');
+      const questionEl = document.getElementById('question');
+      const btnAsk = document.getElementById('btnAsk');
+      const btnClear = document.getElementById('btnClear');
+      const btnBack = document.getElementById('btnBack');
+
+      // Load local data
+      const userId = localStorage.getItem('user_id') || 'User';
+      const last = (() => {
+        try { return JSON.parse(localStorage.getItem('last_result') || 'null'); } catch(e){ return null; }
+      })();
+
+      // Render context & greeting
+      const pred = last && last.prediction ? last.prediction : null;
+      // --- FIX: Added backticks around the string below ---
+      contextEl.textContent = last ? `Context: Last session was classified as '${pred}'.` : 'Context: No recent session data found.';
+
+      function renderGreeting(){
+        if (last && pred) {
+          answerBox.innerHTML = `
+            <div class="greeting">
+              <strong>Hello ${escapeHtml(userId)}!</strong> 👋
+              <div style="margin-top:8px;">I am your Knee Monitor Assistant.</div>
+              <div style="margin-top:8px;">I see your latest gait reading is
+                <span class="prediction">${escapeHtml(pred)}</span>.
+              </div>
+              <div style="margin-top:10px; color:#bfeaff; font-size:13px;">I can explain the raw features or suggest next steps. What is your query?</div>
+            </div>
+          `;
+        } else {
+          answerBox.innerHTML = `
+            <div class="greeting">
+              <strong>Hello ${escapeHtml(userId)}!</strong> 👋
+              <div style="margin-top:8px;">I am your Knee Monitor Assistant.</div>
+              <div style="margin-top:8px; color:#bfeaff; font-size:13px;">
+                I don't see any recent session data yet — I am ready once you process a reading.
+              </div>
+            </div>
+          `;
+        }
       }
-    };
+
+      // small utility: escape HTML
+      function escapeHtml(str){
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      // Show thinking UI
+      function setThinking() {
+        answerBox.innerHTML = `
+          <div class="thinking" aria-hidden="true">
+            <div class="dots">
+              <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+            </div>
+            <div>Thinking…</div>
+          </div>
+        `;
+      }
+
+      // Attach events
+      btnBack.addEventListener('click', () => { location.href = 'dashboard.html'; });
+
+      btnClear.addEventListener('click', () => { questionEl.value = ''; questionEl.focus(); });
+
+      // Enter sends, Shift+Enter newline
+      questionEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          triggerAsk();
+        }
+      });
+
+      btnAsk.addEventListener('click', triggerAsk);
+
+      function scrollAnswerToBottom(){ answerBox.scrollTop = answerBox.scrollHeight; }
+
+      async function triggerAsk(){
+        const q = questionEl.value.trim();
+        if (!q) { questionEl.focus(); return; }
+
+        setThinking();
+        scrollAnswerToBottom();
+
+        const payload = { user_id: localStorage.getItem('user_id'), question: q };
+
+        try {
+          const res = await fetch('/chatbot', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          // if non-JSON or network error, show fallback
+          const j = await res.json().catch(() => ({ ok:false, error:'Invalid JSON response' }));
+
+          if (!j.ok) {
+            answerBox.textContent = 'Assistant error: ' + (j.error || 'unknown');
+          } else {
+            // preserve line breaks
+            const html = escapeHtml(String(j.response || '')).replace(/\n/g, '<br/>');
+            // --- FIX: Added backticks around the string below ---
+            answerBox.innerHTML = `<div style="white-space:pre-wrap; line-height:1.6; color:#dff6ff;">${html}</div>`;
+          }
+        } catch (err) {
+          answerBox.textContent = 'Network Error: ' + (err && err.message ? err.message : String(err));
+        } finally {
+          questionEl.value = '';
+          questionEl.focus();
+          scrollAnswerToBottom();
+        }
+      }
+
+      // initial render
+      renderGreeting();
+      // focus the textarea on load for convenience (but don't steal focus on mobile unnecessarily)
+      setTimeout(() => { if (window.innerWidth > 420) questionEl.focus(); }, 300);
+
+    })();
   </script>
 </body>
 </html>

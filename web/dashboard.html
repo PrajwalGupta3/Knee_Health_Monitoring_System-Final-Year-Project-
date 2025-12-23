@@ -2,63 +2,297 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Dashboard — Knee Monitor</title>
+  <title>Dashboard — OctaKnee</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <link rel="stylesheet" href="static/styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ---------- Reset & Base ---------- */
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f4c75 100%);
+      min-height: 100vh;
+      color: #cbd5e1;
+      padding: 24px;
+      display: flex;
+      justify-content: center;
+    }
+    body::before {
+      content:''; position:fixed; inset:0; z-index:-1; pointer-events:none;
+      background: radial-gradient(circle at 20% 50%, rgba(59,130,246,0.08) 0%, transparent 40%),
+                  radial-gradient(circle at 80% 80%, rgba(6,182,212,0.04) 0%, transparent 40%);
+    }
+
+    /* ---------- Container & Card ---------- */
+    .container { width: 100%; max-width: 980px; margin: 0 auto; }
+    .card {
+      background: linear-gradient(135deg, rgba(30,41,59,0.85) 0%, rgba(15,76,117,0.65) 100%);
+      border-radius: 20px;
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(148,163,184,0.08);
+      box-shadow: 0 25px 50px rgba(0,0,0,0.35);
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+
+    /* ---------- Header ---------- */
+    .topbar {
+      background: linear-gradient(135deg,#3b82f6 0%, #0ea5e9 50%, #06b6d4 100%);
+      padding: 20px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+    }
+    .brand {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 800;
+      font-size: 22px;
+      letter-spacing: -0.5px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .user-badge {
+      background: rgba(255,255,255,0.15);
+      padding: 6px 14px;
+      border-radius: 99px;
+      font-size: 13px;
+      font-weight: 600;
+      backdrop-filter: blur(4px);
+    }
+
+    /* ---------- Layout Sections ---------- */
+    .content-grid {
+      padding: 32px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 768px) { .content-grid { grid-template-columns: 1fr; } }
+
+    h2, h3, h4 {
+      color: #e0f2fe;
+      font-family: 'Poppins', sans-serif;
+      margin-bottom: 16px;
+      font-weight: 700;
+    }
+    h3 { font-size: 18px; margin-top: 0; border-bottom: 1px solid rgba(148,163,184,0.1); padding-bottom: 10px; }
+    h4 { font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; margin-top: 20px; }
+
+    /* ---------- Forms & Inputs ---------- */
+    .input-group { margin-bottom: 12px; }
+    label { display: block; font-size: 12px; font-weight: 600; color: #94a3b8; margin-bottom: 6px; text-transform: uppercase; }
+    input {
+      width: 100%;
+      background: rgba(15,23,42,0.6);
+      border: 1px solid rgba(148,163,184,0.15);
+      border-radius: 10px;
+      padding: 10px 14px;
+      color: white;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    input:focus { outline: none; border-color: #0ea5e9; background: rgba(15,23,42,0.8); }
+
+    .btn-row { display: flex; gap: 10px; align-items: center; margin-top: 16px; flex-wrap: wrap; }
+    
+    button {
+      padding: 10px 18px;
+      border-radius: 10px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 14px;
+    }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #3b82f6 0%, #0ea5e9 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(14,165,233,0.2);
+    }
+    .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(14,165,233,0.3); }
+
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid rgba(14,165,233,0.3);
+      color: #7dd3fc;
+    }
+    .btn-secondary:hover:not(:disabled) { background: rgba(14,165,233,0.1); color: white; }
+
+    .status-msg { font-size: 13px; color: #94a3b8; margin-left: 10px; }
+
+    /* ---------- Results Area ---------- */
+    .result-section { padding: 32px; border-top: 1px solid rgba(148,163,184,0.1); }
+    .hidden { display: none; }
+
+    /* Insight Box (Dynamic Styles applied via JS, but base here) */
+    #insightBox {
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    pre {
+      background: rgba(0,0,0,0.3);
+      padding: 16px;
+      border-radius: 10px;
+      font-size: 12px;
+      color: #a5b4fc;
+      overflow-x: auto;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    #plotContainer img {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.1);
+      margin-top: 10px;
+    }
+
+    #downloadArea a {
+      display: inline-block;
+      margin-top: 12px;
+      color: #38bdf8;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    #downloadArea a:hover { text-decoration: underline; }
+
+    /* ---------- History List ---------- */
+    .history-list { list-style: none; padding: 0; }
+    .history-list li {
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      font-size: 13px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid rgba(255,255,255,0.02);
+    }
+    .history-list li:hover { background: rgba(255,255,255,0.06); }
+
+    /* Links */
+    a.btn-link {
+      color: #cbd5e1;
+      text-decoration: none;
+      font-size: 13px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+    a.btn-link:hover { background: rgba(255,255,255,0.05); color: white; }
+
+  </style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">Knee Monitor</div>
-    <div id="userInfo"></div>
-  </header>
 
-  <main class="container">
-    <section class="card">
-    <h2>Profile</h2>
-    <div>
-        <label>Age <input id="profile_age" type="number" /></label>
-        <label>Height cm <input id="profile_height" type="number" /></label>
-        <label>Weight kg <input id="profile_weight" type="number" /></label>
-        <label>Gender <input id="profile_gender" /></label>
-        <label>Knee side <input id="profile_knee" placeholder="left/right" /></label>
-        <div class="row">
-        <button id="btnSaveProfile">Save Profile</button>
-        <span id="profileStatus" class="muted"></span>
+  <div class="container">
+    
+    <div class="card">
+      <header class="topbar">
+        <div class="brand">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+          OctaKnee
         </div>
-    </div>
-    </section>
+        <div id="userInfo" class="user-badge">User: ...</div>
+      </header>
 
-    <section class="card">
-    <h2>Realtime Capture</h2>
-    <p class="muted">Click "Wait for next reading" after you start the walking session on the phone device.</p>
-    <div class="row">
-        <button id="btnPoll">Wait for next reading</button>
-        <button id="btnProcess" disabled>Process fetched session</button>
-        <a id="linkChat" class="btn-link" href="chat.html">Chat about last</a>
-    </div>
-    <p id="pollStatus" class="muted"></p>
-    </section>
+      <div class="content-grid">
+        
+        <section>
+          <h2>Profile Settings</h2>
+          <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 12px;">
+            <div class="input-group">
+              <label>Age</label>
+              <input id="profile_age" type="number" placeholder="Years" />
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <div class="input-group">
+                <label>Height (cm)</label>
+                <input id="profile_height" type="number" placeholder="cm" />
+              </div>
+              <div class="input-group">
+                <label>Weight (kg)</label>
+                <input id="profile_weight" type="number" placeholder="kg" />
+              </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <div class="input-group">
+                <label>Gender</label>
+                <input id="profile_gender" placeholder="M/F" />
+              </div>
+              <div class="input-group">
+                <label>Knee Side</label>
+                <input id="profile_knee" placeholder="L/R" />
+              </div>
+            </div>
+            
+            <div class="btn-row">
+              <button id="btnSaveProfile" class="btn-primary">Save Profile</button>
+              <span id="profileStatus" class="status-msg"></span>
+            </div>
+          </div>
+        </section>
 
-
-    <section id="result" class="card hidden">
-      <h3>Last Result</h3>
-      <div id="resultSummary"></div>
-      <h4>Raw features</h4>
-      <pre id="rawFeatures"></pre>
-      
-      <h4>Comparison plot</h4>
-      <div id="plotContainer">
-        <img id="comparePlot" style="max-width:100%; display:none; margin-top:10px; border:1px solid #ccc; border-radius:4px;" />
+        <section>
+          <h2>Realtime Capture</h2>
+          <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 12px;">
+            <p style="font-size: 14px; color: #94a3b8; margin-bottom: 20px; line-height: 1.5;">
+              Start the walking session on your device, then click <strong>"Wait for next reading"</strong> to sync.
+            </p>
+            
+            <div class="btn-row" style="flex-direction: column; align-items: stretch;">
+              <button id="btnPoll" class="btn-secondary">📡 Wait for next reading</button>
+              <button id="btnProcess" class="btn-primary" disabled>⚙️ Process fetched session</button>
+              <a id="linkChat" class="btn-link" href="chat.html" style="text-align: center;">💬 Chat about results</a>
+            </div>
+            
+            <p id="pollStatus" class="status-msg" style="margin-top: 15px; display: block; min-height: 20px;"></p>
+          </div>
+        </section>
       </div>
-      
-      <div id="downloadArea" style="margin-top:10px;"></div>
-    </section>
 
-    <section id="history" class="card">
-      <h3>Last 5 sessions (history)</h3>
-      <ul id="historyList"></ul>
-    </section>
-  </main>
+      <section id="result" class="result-section hidden">
+        <h3>Last Result</h3>
+        
+        <div id="insightBox" style="display:none;">
+          <strong>Analysis:</strong> <span id="insightText"></span>
+        </div>
+
+        <div id="resultSummary" style="font-size: 15px; line-height: 1.6; margin-bottom: 20px;"></div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+          <div>
+            <h4>Raw Features</h4>
+            <pre id="rawFeatures"></pre>
+            <div id="downloadArea"></div>
+          </div>
+          <div>
+            <h4>Signal Plot</h4>
+            <div id="plotContainer">
+              <img id="comparePlot" style="display:none;" />
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="card" style="padding: 24px;">
+      <h3 style="border:none;">Session History (Last 5)</h3>
+      <ul id="historyList" class="history-list"></ul>
+    </div>
+
+  </div>
 
   <script src="static/app.js"></script>
   <script>
@@ -69,18 +303,50 @@
     let fetchedTimestamp = null;
     let fetchedSessionJson = null;
     let lastProcessedResult = null;
+    // --- NEW: Global history storage ---
+    let fullHistory = [];
 
     async function refreshHistory() {
         const res = await fetch("/get_history", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({user_id: userId})});
         const j = await res.json();
         if (!j.ok) return;
+        fullHistory = j.history || []; // Store globally
         const list = document.getElementById("historyList");
         list.innerHTML = "";
-        (j.history || []).slice().reverse().forEach(h => {
+        
+        // Reverse to show newest first
+        fullHistory.slice().reverse().forEach((h) => {
             const li = document.createElement("li");
-            li.innerText = `${h.session_id} — pred: ${h.result.prediction || "?"} (${h.result.probabilities ? JSON.stringify(h.result.probabilities) : "n/a"})`;
+            li.style.cursor = "pointer"; // Make it look clickable
+            
+            // Format Timestamp safely
+            let dateStr = h.session_id;
+            try {
+                const ts = h.session_id.split('_'); // e.g. 20251129_114212
+                if(ts.length >= 2) {
+                    dateStr = `${ts[0].slice(0,4)}-${ts[0].slice(4,6)}-${ts[0].slice(6,8)} ${ts[1].slice(0,2)}:${ts[1].slice(2,4)}`;
+                }
+            } catch(e) {}
+
+            // Color Coding based on prediction
+            let color = '#38bdf8'; // Blue (Recovery)
+            if (h.result.prediction === 'Healthy') color = '#4ade80'; // Green
+            if (h.result.prediction === 'Impaired') color = '#f87171'; // Red
+
+            li.innerHTML = `
+                <div style="display:flex; justify-content:space-between; width:100%;">
+                    <span>📅 ${dateStr}</span>
+                    <span style="font-weight:bold; color:${color};">
+                        ${h.result.prediction || "?"}
+                    </span>
+                </div>`;
+            
+            // --- CLICK HANDLER ---
+            li.onclick = () => loadSessionIntoView(h); 
+            
             list.appendChild(li);
         });
+        
         // fill profile inputs
         const p = j.profile || {};
         if (p.height_cm) document.getElementById("profile_height").value = p.height_cm;
@@ -90,10 +356,47 @@
         if (p.knee_side) document.getElementById("profile_knee").value = p.knee_side;
     }
 
+    function loadSessionIntoView(session) {
+        // 1. Show Result Section
+        document.getElementById("result").classList.remove("hidden");
+        document.getElementById("result").scrollIntoView({ behavior: 'smooth' });
+
+        // 2. Populate Summary
+        const res = session.result;
+        document.getElementById("resultSummary").innerHTML = `
+          <strong>Date:</strong> ${session.session_id} <br/>
+          <strong>Prediction:</strong> <span style="color:#38bdf8; font-size:1.1em;">${res.prediction}</span> <br/> 
+          <strong>Probabilities:</strong> ${JSON.stringify(res.probabilities)} <br/> 
+          <strong>BMI:</strong> ${res.bmi ? res.bmi.bmi : 'N/A'}
+        `;
+
+        // 3. Populate Raw Features
+        document.getElementById("rawFeatures").innerText = JSON.stringify(res.raw_features, null, 2);
+
+        // 4. Show Plot
+        const plotImg = document.getElementById("comparePlot");
+        if (session.plot_url) {
+            plotImg.src = session.plot_url;
+            plotImg.style.display = "block";
+        } else {
+            plotImg.style.display = "none";
+        }
+
+        // 5. Download Link
+        const downloadDivId = "downloadArea";
+        let dd = document.getElementById(downloadDivId);
+        dd.innerHTML = `<a href="${session.final_csv}" download>📥 Download Archived CSV</a>`;
+
+        // 6. Hide Insights (since they aren't stored in history yet)
+        const insightBox = document.getElementById("insightBox");
+        insightBox.style.display = "none"; 
+        
+        // Update lastProcessedResult so Chatbot works with this historical session
+        lastProcessedResult = res;
+    }
 
     document.getElementById("btnPoll").onclick = async () => {
       document.getElementById("pollStatus").innerText = "Polling for new reading... (timeout 5m)";
-      // first get latest known timestamp from localStorage
       const lastSeen = localStorage.getItem("last_seen_ts") || null;
       try {
         const wait = await fetch("/wait_for_new_reading", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({last_seen_timestamp: lastSeen})});
@@ -109,8 +412,10 @@
         const gj = await getj.json();
         if (!gj.ok) { document.getElementById("pollStatus").innerText = "Failed to fetch session JSON"; return; }
         fetchedSessionJson = gj.data;
-        document.getElementById("pollStatus").innerText = "Session fetched. Click 'Process fetched session' to run pipeline.";
+        document.getElementById("pollStatus").innerText = "Session fetched. Ready to process.";
         document.getElementById("btnProcess").disabled = false;
+        // Make the button pulse to indicate readiness
+        document.getElementById("btnProcess").style.boxShadow = "0 0 15px rgba(14,165,233,0.6)";
       } catch (e) {
         document.getElementById("pollStatus").innerText = "Error: " + e;
       }
@@ -119,6 +424,8 @@
     document.getElementById("btnProcess").onclick = async () => {
         if (!fetchedSessionJson) return;
         document.getElementById("pollStatus").innerText = "Processing (this may take a few seconds)...";
+        document.getElementById("btnProcess").style.boxShadow = "none";
+        
         const res = await fetch("/process_session", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({user_id: userId, session_data: fetchedSessionJson})});
         const j = await res.json();
         
@@ -129,11 +436,47 @@
         
         document.getElementById("pollStatus").innerText = "Processing finished: " + j.session_id;
         lastProcessedResult = j.result;
+        
         document.getElementById("result").classList.remove("hidden");
-        document.getElementById("resultSummary").innerHTML = `<strong>Prediction:</strong> ${j.result.prediction} <br/> <strong>Probabilities:</strong> ${JSON.stringify(j.result.probabilities)} <br/> <strong>BMI:</strong> ${j.result.bmi.bmi || 'N/A'} (${j.result.bmi.bmi_category || 'N/A'})`;
+        // Scroll to result
+        document.getElementById("result").scrollIntoView({ behavior: 'smooth' });
+
+        // --- RENDER INSIGHTS LOGIC ---
+        const insightBox = document.getElementById("insightBox");
+        const insightText = document.getElementById("insightText");
+        
+        if (j.insights && j.insights.length > 0) {
+            const items = j.insights.map(i => `<li>${i}</li>`).join("");
+            insightText.innerHTML = `<ul style='margin:5px 0 0 15px; padding:0;'>${items}</ul>`;
+            
+            insightBox.style.display = "block";
+            
+            const hasAlert = j.insights.some(x => x.includes("Alert") || x.includes("Change") || x.includes("First"));
+            
+            if (hasAlert) {
+                // Alert Style (Orange)
+                insightBox.style.background = "rgba(255, 152, 0, 0.15)"; 
+                insightBox.style.border = "1px solid rgba(255, 152, 0, 0.4)";
+                insightBox.style.color = "#ffb74d";
+            } else {
+                // Stable Style (Green)
+                insightBox.style.background = "rgba(76, 175, 80, 0.15)"; 
+                insightBox.style.border = "1px solid rgba(76, 175, 80, 0.4)";
+                insightBox.style.color = "#81c784";
+            }
+        } else {
+            insightBox.style.display = "none";
+        }
+        // -----------------------------
+
+        document.getElementById("resultSummary").innerHTML = `
+          <strong>Prediction:</strong> <span style="color:#38bdf8; font-size:1.1em;">${j.result.prediction}</span> <br/> 
+          <strong>Probabilities:</strong> ${JSON.stringify(j.result.probabilities)} <br/> 
+          <strong>BMI:</strong> ${j.result.bmi.bmi || 'N/A'} (${j.result.bmi.bmi_category || 'N/A'})
+        `;
         document.getElementById("rawFeatures").innerText = JSON.stringify(j.result.raw_features, null, 2);
 
-        // --- NEW: Display the Plot ---
+        // Display the Plot
         const plotImg = document.getElementById("comparePlot");
         if (j.plot_url) {
             plotImg.src = j.plot_url;
@@ -141,43 +484,37 @@
         } else {
             plotImg.style.display = "none";
         }
-        // -----------------------------
 
-        // show download link
+        // Download link
         const downloadDivId = "downloadArea";
         let dd = document.getElementById(downloadDivId);
-        // Ensure dd exists (it's now in the HTML, but good to be safe)
-        if (!dd) {
-            dd = document.createElement("div");
-            dd.id = downloadDivId;
-            document.getElementById("result").appendChild(dd);
-        }
-        dd.innerHTML = `<a href="${j.download_csv}" download>Download final.csv</a>`;
+        dd.innerHTML = `<a href="${j.download_csv}" download>📥 Download Analysis CSV</a>`;
 
-        // refresh history
         await refreshHistory();
         document.getElementById("btnProcess").disabled = true;
     };
 
     document.getElementById("btnSaveProfile").onclick = async () => {
-    const profile = {
-        age: parseInt(document.getElementById("profile_age").value) || null,
-        height_cm: parseFloat(document.getElementById("profile_height").value) || null,
-        weight_kg: parseFloat(document.getElementById("profile_weight").value) || null,
-        gender: document.getElementById("profile_gender").value || null,
-        knee_side: document.getElementById("profile_knee").value || null
-    };
-    const resp = await fetch("/update_profile", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({user_id: userId, profile})});
-    const j = await resp.json();
-    if (j.ok) {
-        document.getElementById("profileStatus").innerText = "Saved";
-        setTimeout(()=>document.getElementById("profileStatus").innerText="",1500);
-    } else {
-        document.getElementById("profileStatus").innerText = "Save failed";
-    }
+      const profile = {
+          age: parseInt(document.getElementById("profile_age").value) || null,
+          height_cm: parseFloat(document.getElementById("profile_height").value) || null,
+          weight_kg: parseFloat(document.getElementById("profile_weight").value) || null,
+          gender: document.getElementById("profile_gender").value || null,
+          knee_side: document.getElementById("profile_knee").value || null
+      };
+      const resp = await fetch("/update_profile", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({user_id: userId, profile})});
+      const j = await resp.json();
+      if (j.ok) {
+          const status = document.getElementById("profileStatus");
+          status.innerText = "Saved successfully";
+          status.style.color = "#4ade80";
+          setTimeout(() => { status.innerText=""; }, 2000);
+      } else {
+          document.getElementById("profileStatus").innerText = "Save failed";
+          document.getElementById("profileStatus").style.color = "#f87171";
+      }
     };
 
-    // link to chat: store last result in localStorage for chat page
     document.getElementById("linkChat").addEventListener("click", () => {
       if (lastProcessedResult) {
         localStorage.setItem("last_result", JSON.stringify(lastProcessedResult));

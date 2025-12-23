@@ -1,0 +1,60 @@
+{
+  "best_model": {
+    "model": "LogisticRegression",
+    "mean_acc": 0.80625,
+    "std_acc": 0.058593171293438474,
+    "macro_f1": 0.8345521145521145,
+    "latency_us": 2.4302800496419272,
+    "efficiency_score": 65.40829065997718
+  },
+  "ranking": [
+    {
+      "model": "LogisticRegression",
+      "mean_acc": 0.80625,
+      "std_acc": 0.058593171293438474,
+      "macro_f1": 0.8345521145521145,
+      "latency_us": 2.4302800496419272,
+      "efficiency_score": 65.40829065997718
+    },
+    {
+      "model": "GaussianNB",
+      "mean_acc": 0.8354166666666668,
+      "std_acc": 0.05013003923131652,
+      "macro_f1": 0.8423118279569892,
+      "latency_us": 2.848307291666667,
+      "efficiency_score": 61.99138984334844
+    },
+    {
+      "model": "SVM_linear",
+      "mean_acc": 0.8302083333333334,
+      "std_acc": 0.054635391841430646,
+      "macro_f1": 0.8423118279569892,
+      "latency_us": 3.673459092775981,
+      "efficiency_score": 53.843219479692095
+    },
+    {
+      "model": "SVM_rbf",
+      "mean_acc": 0.828125,
+      "std_acc": 0.05119025989710674,
+      "macro_f1": 0.8423118279569892,
+      "latency_us": 6.183634201685588,
+      "efficiency_score": 41.99831257606008
+    },
+    {
+      "model": "kNN",
+      "mean_acc": 0.8375,
+      "std_acc": 0.056519416526043906,
+      "macro_f1": 0.8613978494623655,
+      "latency_us": 33.38024020195007,
+      "efficiency_score": 23.675032217005278
+    },
+    {
+      "model": "RandomForest",
+      "mean_acc": 0.8125,
+      "std_acc": 0.06588078458684124,
+      "macro_f1": 0.8418298119790658,
+      "latency_us": 76.99176669120789,
+      "efficiency_score": 18.64985059263552
+    }
+  ]
+}

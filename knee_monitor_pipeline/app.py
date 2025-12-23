@@ -290,7 +290,68 @@ def classify_final_csv(final_csv, user_profile):
         "bmi": bmi_info
     }
     return res
+def generate_insights(history, current_result):
+    """
+    Compares current_result against the last 5 sessions in history.
+    Returns a list of short insight strings.
+    """
+    # If no history exists, this is the baseline
+    if not history:
+        return ["<strong>Baseline Established:</strong> This is your first recorded session."]
 
+    insights = []
+    
+    # 1. Extract valid previous features
+    # History structure: [{ "result": { "raw_features": {...}, "prediction": "..." } }, ...]
+    prev_paces = []
+    prev_accs = []
+    prev_preds = []
+    
+    for h in history:
+        res = h.get("result", {})
+        feats = res.get("raw_features", {})
+        if feats and feats.get("pace_spm") is not None:
+            prev_paces.append(feats["pace_spm"])
+        if feats and feats.get("acc_mag_rms") is not None:
+            prev_accs.append(feats["acc_mag_rms"])
+        if res.get("prediction"):
+            prev_preds.append(res["prediction"])
+
+    # 2. Check Prediction Stability
+    curr_pred = current_result.get("prediction")
+    if prev_preds:
+        last_pred = prev_preds[-1]
+        if curr_pred != last_pred:
+            insights.append(f"<strong>Status Change:</strong> Gait pattern shifted from '{last_pred}' to '{curr_pred}'.")
+        elif len(prev_preds) >= 2 and all(p == curr_pred for p in prev_preds[-3:]):
+            insights.append(f"<strong>Consistent:</strong> Gait remains classified as '{curr_pred}' for multiple sessions.")
+
+    # 3. Check Pace Deviation (Threshold: 15% change)
+    # Slower pace often indicates guarding/pain; faster indicates confidence.
+    curr_pace = current_result["raw_features"].get("pace_spm", 0)
+    if prev_paces and curr_pace > 0:
+        avg_pace = sum(prev_paces) / len(prev_paces)
+        pct_diff = (curr_pace - avg_pace) / avg_pace * 100
+        
+        if pct_diff > 15:
+            insights.append(f"<strong>Pace:</strong> You are walking {pct_diff:.1f}% faster than your recent average.")
+        elif pct_diff < -15:
+            insights.append(f"<strong>Pace:</strong> You are walking {abs(pct_diff):.1f}% slower than your recent average.")
+
+    # 4. Check Impact/Load Spike (Acc RMS) (Threshold: 20% change)
+    # Higher RMS often means harder heel strikes (less shock absorption).
+    curr_acc = current_result["raw_features"].get("acc_mag_rms", 0)
+    if prev_accs and curr_acc > 0:
+        avg_acc = sum(prev_accs) / len(prev_accs)
+        if abs(curr_acc - avg_acc) > (0.2 * avg_acc):
+            direction = "higher" if curr_acc > avg_acc else "lower"
+            insights.append(f"<strong>Impact Alert:</strong> Knee impact load is significantly {direction} than usual.")
+
+    # 5. Default if no significant deviations found
+    if not insights:
+        insights.append("<strong>Stable:</strong> Current metrics align closely with your recent history.")
+
+    return insights
 @app.route("/process_session", methods=["POST"])
 def process_session():
     data = request.json or {}
@@ -316,51 +377,51 @@ def process_session():
         profile = record.get("profile", {})
         result = classify_final_csv(final_csv, profile)
         
+        # --- GENERATE INSIGHTS ---
+        # Generate insights based on existing history (before appending new result)
+        existing_history = record.get("history", [])
+        insights_list = generate_insights(existing_history, result)
+        
         # 4. FIND THE PLOT IMAGE
-        # We look inside the 'plots' folder created by qc_and_plot.py
         plot_url = None
         plots_dir = sess_dir / "plots"
         if plots_dir.exists():
-            # Find any .png file in that folder
             found_plots = list(plots_dir.glob("*.png"))
             if found_plots:
-                # Get relative path for URL (e.g., sessions/2025.../plots/image.png)
-                # IMPORTANT: Replace backslashes with forward slashes for URLs on Windows
                 rel_plot_path = found_plots[0].relative_to(USER_DATA_DIR / user_id)
                 plot_url = f"/user_file/{user_id}/{str(rel_plot_path).replace('\\', '/')}"
 
+        # 5. Save History
+        # Store CSV path safely
+        rel_csv_path = final_csv.relative_to(USER_DATA_DIR / user_id)
+        
+        hist_entry = {
+            "session_id": sess_name, 
+            "result": result, 
+            "final_csv": str(rel_csv_path).replace('\\', '/'),
+            "plot_url": plot_url
+        }
+        
+        record.setdefault("history", []).append(hist_entry)
+        record["history"] = record["history"][-5:] # Keep last 5
+        save_user_record(user_id, record)
+        
+        # 6. Return Response
+        download_url = f"/user_file/{user_id}/{str(rel_csv_path).replace('\\', '/')}"
+        
+        return jsonify({
+            "ok": True, 
+            "session_id": sess_name, 
+            "result": result, 
+            "insights": insights_list,
+            "download_csv": download_url,
+            "plot_url": plot_url 
+        })
+
     except Exception as e:
         import traceback
-        traceback.print_exc() # Print error to terminal for debugging
+        traceback.print_exc()
         return jsonify({"ok": False, "error": str(e)}), 500
-
-    # 5. Save History
-    record = load_user_record(user_id)
-    
-    # Store CSV path safely
-    rel_csv_path = final_csv.relative_to(USER_DATA_DIR / user_id)
-    
-    hist_entry = {
-        "session_id": sess_name, 
-        "result": result, 
-        "final_csv": str(rel_csv_path).replace('\\', '/'),
-        "plot_url": plot_url  # <--- Saving the plot URL here
-    }
-    
-    record.setdefault("history", []).append(hist_entry)
-    record["history"] = record["history"][-5:] # Keep last 5
-    save_user_record(user_id, record)
-    
-    # 6. Return Response
-    download_url = f"/user_file/{user_id}/{str(rel_csv_path).replace('\\', '/')}"
-    
-    return jsonify({
-        "ok": True, 
-        "session_id": sess_name, 
-        "result": result, 
-        "download_csv": download_url,
-        "plot_url": plot_url # <--- Sending it to frontend
-    })
 
 @app.route("/user_file/<user_id>/<path:relpath>")
 def user_file(user_id, relpath):
@@ -433,10 +494,15 @@ def chatbot():
     if len(question) > 500: question = question[:500]
         
     record = load_user_record(user_id)
-    last = record.get("history", [])[-1] if record.get("history") else None
+    # --- CHANGE 1: Retrieve last 5 sessions instead of just the last one ---
+    # This safely handles:
+    # - New users (returns [])
+    # - Users with < 5 sessions (returns all of them)
+    # - Users with > 5 sessions (returns last 5)
+    history = record.get("history", [])[-5:]
+
+    # Build context string from history
     profile = record.get("profile", {})
-    
-    context_str = json.dumps(last) if last else "No recent session data available."
     thresholds_str = json.dumps(thresholds)
 
     # --- 2. NEW: Extract ALL Profile Centroids ---
@@ -450,6 +516,12 @@ def chatbot():
         ref_profiles[p_name] = p_data.get("centroid", {})
         
     ref_profiles_str = json.dumps(ref_profiles)
+
+    # --- CHANGE 2: Format history for the LLM ---
+    if not history:
+        history_context = "No session history available (New User)."
+    else:
+        history_context = json.dumps(history)
     # ---------------------------------------------
     
     system_lines = [
@@ -464,7 +536,7 @@ def chatbot():
         # --- NEW: PASSING ALL PROFILES ---
         f"<reference_profiles>{ref_profiles_str}</reference_profiles>", 
         # ---------------------------------
-        f"<current_session>{context_str}</current_session>",
+        f"<session_history>{history_context}</session_history>",
         "",
         "### CONTEXT NOTE",
         "The 'Impaired' classification in the session data usually corresponds to the 'Fatigued' or 'Unstable' profiles provided in <reference_profiles>.",
