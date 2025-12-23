@@ -1,0 +1,12 @@
+flask
+python-dotenv
+requests
+pandas
+numpy
+joblib
+matplotlib
+scipy
+werkzeug
+firebase-admin
+groq
+flask-cors
