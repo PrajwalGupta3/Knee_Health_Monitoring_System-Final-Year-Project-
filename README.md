@@ -54,6 +54,57 @@ We moved beyond basic API calls to ensure medical safety:
 
 ---
 
+## 🔌 Hardware Setup
+
+### Bill of Materials (BOM)
+* **Microcontroller:** ESP32 Dev Module (30 Pin)
+* **IMU Sensor:** MPU6050 (6-axis Accelerometer/Gyro)
+* **Temperature Sensor:** BMP180
+* **Wiring:** Jumper wires (Male-to-Female and Female-to-Female), Breadboards
+* **Power:** Micro-USB Cable and power bank
+
+### ⚡ Wiring Diagram (Pinout)
+The system uses the I2C protocol. Connect the components as follows:
+
+| ESP32 Pin | MPU6050 Pin | BMP180 Pin | Function |
+| :--- | :--- | :--- | :--- |
+| **3.3V** | VCC | VCC | Power |
+| **GND** | GND | GND | Ground |
+| **D21** | SDA | SDA | I2C Data |
+| **D22** | SCL | SCL | I2C Clock |
+
+---![hardware_implementation](https://github.com/user-attachments/assets/fd4b5a50-eae3-43d8-ba9b-a040c04b465e)
+
+
+## 💾 Firmware Installation
+
+**Critical Note:** This project relies on specific legacy libraries. Do **not** update them via the Arduino Library Manager, as newer versions may break the `IOXhop_FirebaseESP32` logic.
+
+### 1. Prerequisite: Arduino IDE Legacy
+Please use **Arduino IDE 1.8.19 (Legacy)**. The new IDE (2.0+) may have compatibility issues with the Firebase signing verification used in this specific library version.
+
+### 2. Install Custom Libraries
+1.  Navigate to the `firmware/libraries` folder in this repository.
+2.  Copy all folders (`I2Cdev`, `MPU6050`, `SFE_BMP180`, `IOXhop_FirebaseESP32`) into your local Arduino libraries directory:
+    * **Windows:** `Documents\Arduino\libraries\`
+    * **Mac/Linux:** `~/Documents/Arduino/libraries/`
+
+### 3. Flash the Code
+1.  Open `firmware/OctaKnee_ESP32/OctaKnee_ESP32.ino`.
+2.  Update the **Configuration Section** at the top with your credentials:
+    ```cpp
+    #define WIFI_SSID "your_wifi_name"
+    #define WIFI_PASSWORD "your_wifi_password"
+    #define FIREBASE_HOST "your-project.firebaseio.com"
+    #define FIREBASE_AUTH "your_database_secret"
+    ```
+3.  Select Board: `Tools` > `Board` > `DOIT ESP32 DEVKIT V1`.
+4.  Select Port and Click **Upload**.
+
+### 🔍 Troubleshooting
+* **"WiFi Stuck Connecting":** Ensure you are using a **2.4GHz WiFi** network (ESP32 does not support 5GHz).
+* **"MPU Connection Failed":** Check your wiring. If your module uses address `0x68` (default), change `MPU6050 mpu(0x69);` to `MPU6050 mpu(0x68);` in line 16.
+
 ## Installation & Setup
 
 ### Prerequisites
