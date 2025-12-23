@@ -57,11 +57,72 @@ We moved beyond basic API calls to ensure medical safety:
 ## Installation & Setup
 
 ### Prerequisites
-* Python 3.9+
-* ESP32 Dev Module
-* Firebase Account
+* **Python 3.9+**
+* **Git**
+* A **Firebase Project** (for Realtime Database)
+* A **Groq Cloud API Key** (for Llama-3 inference)
 
 ### 1. Clone the Repository
 ```bash
-git clone [https://github.com/your-username/OctaKnee.git](https://github.com/your-username/OctaKnee.git)
+git clone https://github.com/PrajwalGupta3/Knee_Health_Monitoring_System-Final-Year-Project-.git
 cd OctaKnee
+
+### 2. Backend Setup
+It is recommended to use a virtual environment to manage dependencies.
+
+Step A: Create Virtual Environment
+
+Bash
+
+# Windows
+python -m venv venv
+.\venv\Scripts\activate
+
+# Mac/Linux
+python3 -m venv venv
+source venv/bin/activate
+Step B: Install Dependencies Install the required Python libraries (Flask, Groq, Pandas, etc.):
+
+Bash
+
+pip install -r requirements.txt
+Step C: Configure Environment Variables
+
+Create a file named .env in the root directory.
+
+Copy the contents of .env.example into .env.
+
+Fill in your specific API keys and configuration:
+
+Ini, TOML
+
+# .env file content
+
+# 1. Firebase Configuration
+FIREBASE_SERVICE_ACCOUNT=firebase-adminsdk.json
+FIREBASE_DB_URL=[https://your-project-id.firebaseio.com](https://your-project-id.firebaseio.com)
+
+# 2. Groq AI Configuration
+GROQ_API_KEY=gsk_your_actual_api_key_here
+GROQ_MODEL=llama-3.3-70b-versatile
+GROQ_API_HOST=[https://api.groq.com/openai/v1](https://api.groq.com/openai/v1)
+
+# 3. System Settings
+POLL_INTERVAL=10
+PORT=5000
+Step D: Add Firebase Credentials
+
+Go to your Firebase Console > Project Settings > Service Accounts.
+
+Generate a new private key (JSON file).
+
+Rename this file to firebase-adminsdk.json.
+
+Place it in the root folder of the project (same level as app.py).
+
+Step E: Run the Application Start the Flask server:
+
+Bash
+
+python app.py
+The server will start at http://localhost:5000. You should see logs indicating the model loaded successfully.
