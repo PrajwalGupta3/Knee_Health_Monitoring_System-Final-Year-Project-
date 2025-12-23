@@ -10,7 +10,7 @@ Unlike standard fitness trackers, OctaKnee captures high-fidelity kinematic data
 
 ---
 
-## ⚙️ System Architecture
+## System Architecture
 
 The system follows a strict **Edge-to-Cloud-to-User** data flow:
 
@@ -54,7 +54,7 @@ We moved beyond basic API calls to ensure medical safety:
 
 ---
 
-## 🔌 Hardware Setup
+## Hardware Setup
 
 ### Bill of Materials (BOM)
 * **Microcontroller:** ESP32 Dev Module (30 Pin)
@@ -63,7 +63,7 @@ We moved beyond basic API calls to ensure medical safety:
 * **Wiring:** Jumper wires (Male-to-Female and Female-to-Female), Breadboards
 * **Power:** Micro-USB Cable and power bank
 
-### ⚡ Wiring Diagram (Pinout)
+### Wiring Diagram (Pinout)
 The system uses the I2C protocol. Connect the components as follows:
 
 | ESP32 Pin | MPU6050 Pin | BMP180 Pin | Function |
@@ -76,7 +76,7 @@ The system uses the I2C protocol. Connect the components as follows:
 ---![hardware_implementation](https://github.com/user-attachments/assets/fd4b5a50-eae3-43d8-ba9b-a040c04b465e)
 
 
-## 💾 Firmware Installation
+## Firmware Installation
 
 **Critical Note:** This project relies on specific legacy libraries. Do **not** update them via the Arduino Library Manager, as newer versions may break the `IOXhop_FirebaseESP32` logic.
 
@@ -101,7 +101,7 @@ Please use **Arduino IDE 1.8.19 (Legacy)**. The new IDE (2.0+) may have compatib
 3.  Select Board: `Tools` > `Board` > `DOIT ESP32 DEVKIT V1`.
 4.  Select Port and Click **Upload**.
 
-### 🔍 Troubleshooting
+### Troubleshooting
 * **"WiFi Stuck Connecting":** Ensure you are using a **2.4GHz WiFi** network (ESP32 does not support 5GHz).
 * **"MPU Connection Failed":** Check your wiring. If your module uses address `0x68` (default), change `MPU6050 mpu(0x69);` to `MPU6050 mpu(0x68);` in line 16.
 
